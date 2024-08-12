@@ -1,0 +1,71 @@
+#!/usr/bin/python3
+
+import os
+import re
+
+tabfile_path = "/tmp/tabs"
+switchto_pipe = "/tmp/switchto"
+tabs = ""
+choices = ""
+
+# INFO: This is obviously not the best regex to match URLs, but it should be
+# able to deal with simple URLs (no queries etc)
+url_pattern = re.compile(r"(https://|http://|).*\..*(\..*)*(/.*)*")
+
+try:
+    f = open(tabfile_path, 'r')
+except FileNotFoundError:
+    print("Could not find tab file. Exiting!")
+    exit(1)
+else:
+    # INFO: Read all tabs currently in the file
+    tabs = f.read()
+    f.close()
+
+# INFO: Split up the tab info into an list
+tabs = [tab_info.split("\t") for tab_info in tabs.split("\n")]
+# INFO: Cut out the last entry from the resulting list, as there is one newline
+# character too much in the file
+tabs = tabs[0:-1]
+
+for tab in tabs:
+    # INFO: I think, it should technically be impossible for any of these
+    # values to be None, but better safe than sorry
+    if tab[0] is not None and tab[1] is not None and tab[2] is not None:
+        choices = choices + tab[0] + "\t" + tab[1] + "\t" + tab[2] + "\n"
+
+choice = os.popen(
+    f'echo "{choices}" -n | rofi -dmenu -i -location 0').readline()
+choice = choice.strip('\n')
+choice = choice.split('\t')
+
+# INFO: Exit if nothing was chosen
+if choice[0] == "":
+    exit(0)
+
+# INFO: If index of choice is not a tab id: open a new tab with the string as
+# the query
+if not choice[0].isdigit():
+    if url_pattern.match(choice[0]):
+        os.popen(f"firefox --new-tab {choice[0]}")
+    else:
+        os.popen(
+            f"firefox --new-tab 'https://duckduckgo.com/?t=ffab&q={choice[0]}'")
+    exit(0)
+
+# INFO: Parse the string to int
+# If the string is a number with a leading zero like "02", it will get past the
+# isdigit() check, but it would cause the plugin to shutdown the client app
+tabId = int(choice[0])
+
+try:
+    pipe = open(switchto_pipe, "w")
+except FileNotFoundError:
+    print("Could not find switch-to pipe. Exiting!")
+    exit(1)
+else:
+    # INFO: As this is a FIFO pipe, multiple values could queue up in there, if
+    # the opposite end (browser plugin) is not reading the values
+    pipe.write(str(tabId))
+    pipe.flush()
+    pipe.close()

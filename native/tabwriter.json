@@ -1,0 +1,7 @@
+{
+	"name": "tabwriter",
+	"description": "Native app to write open tabs to disk",
+	"path": "/home/<user>/.local/bin/tabwriter",
+	"type": "stdio",
+	"allowed_extensions": ["@tabflow"]
+}

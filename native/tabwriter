@@ -1,0 +1,74 @@
+#!/usr/bin/python3
+
+import sys
+import os
+import json
+import struct
+from threading import Thread
+
+# TODO: Find a proper way to gracefully shut down the application,
+# e.g. not just killing it using SIGKILL
+switchto_pipe = "/tmp/switchto"
+tabfile_path = "/tmp/tabs"
+permissions = 0o600
+
+
+def getMessage():
+    rawLength = sys.stdin.buffer.read(4)
+    if len(rawLength) == 0:
+        print("Invalid message length. Exiting!", file=sys.stderr)
+        exit(1)
+    messageLength = struct.unpack("@I", rawLength)[0]
+    message = sys.stdin.buffer.read(messageLength).decode("utf-8")
+    return json.loads(message)
+
+
+def encodeMessage(messageContent):
+    encodedLength = struct.pack("@I", len(messageContent))
+    return {'length': encodedLength, 'content': messageContent.encode("utf-8")}
+
+
+def sendMessage(encodedMessage):
+    sys.stdout.buffer.write(encodedMessage["length"])
+    sys.stdout.buffer.write(encodedMessage["content"])
+    sys.stdout.buffer.flush()
+
+
+def opener(path, flags):
+    return os.open(path, flags, mode=permissions)
+
+
+def readerThread():
+    with open(tabfile_path, 'w', opener=opener) as f:
+        while True:
+            f.seek(0)
+            receivedMessage = getMessage()
+            f.write(receivedMessage)
+            f.truncate()
+
+
+def writerThread():
+    try:
+        if not os.path.exists(switchto_pipe):
+            os.mkfifo(switchto_pipe, mode=permissions)
+    except OSError:
+        print("An error occured while creating the FIFO pipe. Exiting!")
+        exit(1)
+    while True:
+        try:
+            f = open(switchto_pipe, 'r')
+        except FileNotFoundError:
+            print("Could not find pipe")
+            exit(1)
+        else:
+            sendMessage(encodeMessage(f.read()))
+            f.close()
+
+
+if __name__ == "__main__":
+    reader = Thread(target=readerThread)
+    reader.start()
+    writer = Thread(target=writerThread)
+    writer.start()
+    reader.join()
+    writer.join()
