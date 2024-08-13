@@ -37,7 +37,7 @@ cp tabflow/native/tabwriter.json ~/.mozilla/native-messaging-hosts/
 ```
 bind = $mainMod_SHIFT, B, exec, ~/.local/bin/tabselect
 ```
-7. Install the extension from ... or add a temporary add-on on the about:debugging page (select the `manifest.json` from the extension directory)
+7. Install the extension from <https://addons.mozilla.org/en-US/firefox/addon/tabflow/> or add a temporary add-on on the about:debugging page (select the `manifest.json` from the extension directory)
 
 ## Usage
 Invoke the `tabselect` script, e.g. using a shortcut, and start typing the name of your desired tab.
