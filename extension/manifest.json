@@ -1,9 +1,15 @@
 {
 	"manifest_version": 3,
 	"name": "TabFlow",
-	"version": "0.1",
+	"version": "0.2",
+	"description": "Easily switch/create tabs using external programs, like Rofi.",
 
-	"permissions": ["tabs", "nativeMessaging"],
+	"permissions": ["tabs", "nativeMessaging", "storage"],
+	"optional_permissions": ["webRequest"],
+
+	"options_ui": {
+		"page": "options.html"
+	},
 
 	"browser_specific_settings": {
 		"gecko": {
@@ -17,6 +23,8 @@
 	},
 
 	"icons": {
-		"128": "icons/tabflow.png"
+		"32": "icons/tabflow32.png",
+		"64": "icons/tabflow64.png",
+		"128": "icons/tabflow128.png"
 	}
 }

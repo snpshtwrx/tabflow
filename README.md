@@ -1,13 +1,14 @@
 # TabFlow
-Easily switch and create tabs in Firefox using Rofi.
+Easily switch and create tabs in Firefox using Rofi/fzf/dmenu/...
 
 ## Features
-* Switch Firefox tabs using Rofi
+* Switch Firefox tabs using Rofi/fzf/dmenu/...
 * Create new tabs in Firefox using Rofi
+* Show tab favicons in Rofi
 
 ## Requirements
 * Firefox 109.0 or higher
-* Rofi
+* Rofi/fzf/dmenu/...
 * Python 3
 
 ## Installation

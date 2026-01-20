@@ -8,8 +8,10 @@ from threading import Thread
 
 # TODO: Find a proper way to gracefully shut down the application,
 # e.g. not just killing it using SIGKILL
-switchto_pipe = "/tmp/switchto"
-tabfile_path = "/tmp/tabs"
+tabflow_prefix = "/tmp/tabflow/"
+switchto_pipe = "switchto"
+tabfile_path = "tabs"
+dir_permissions = 0o1700
 permissions = 0o600
 
 
@@ -39,7 +41,7 @@ def opener(path, flags):
 
 
 def readerThread():
-    with open(tabfile_path, 'w', opener=opener) as f:
+    with open(tabflow_prefix + tabfile_path, 'w', opener=opener) as f:
         while True:
             f.seek(0)
             receivedMessage = getMessage()
@@ -49,14 +51,14 @@ def readerThread():
 
 def writerThread():
     try:
-        if not os.path.exists(switchto_pipe):
-            os.mkfifo(switchto_pipe, mode=permissions)
+        if not os.path.exists(tabflow_prefix + switchto_pipe):
+            os.mkfifo(tabflow_prefix + switchto_pipe, mode=permissions)
     except OSError:
         print("An error occured while creating the FIFO pipe. Exiting!")
         exit(1)
     while True:
         try:
-            f = open(switchto_pipe, 'r')
+            f = open(tabflow_prefix + switchto_pipe, 'r')
         except FileNotFoundError:
             print("Could not find pipe")
             exit(1)
@@ -66,6 +68,10 @@ def writerThread():
 
 
 if __name__ == "__main__":
+    if not os.path.exists(tabflow_prefix):
+        os.mkdir(tabflow_prefix, mode=dir_permissions)
+    if not os.path.exists(tabflow_prefix + "icons/"):
+        os.mkdir(tabflow_prefix + "icons/", mode=dir_permissions)
     reader = Thread(target=readerThread)
     reader.start()
     writer = Thread(target=writerThread)
