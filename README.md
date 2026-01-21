@@ -45,6 +45,10 @@ Invoke the `tabselect` script, e.g. using a shortcut, and start typing the name 
 You can search by tab name, URL or ID (though, you probably don't know the ID of a tab).
 If there is no matching tab, and you still press enter, a new tab searching for the string will be opened.
 
+If you want to use a picker other than rofi pass your desired picker as the first argument to the `tabselect` script.
+For example, to switch tabs using `fzf` simply invoke `tabselect fzf`.
+`fzf` and `dmenu` seem to work, although all pickers accepting newline separated lists should work.
+
 ## Issues
 * If you encounter any bugs, feedback is greatly appreciated.
 * If you want to use another search engine for results which are not in the current tab list, change the line, with the DDG search query, in the `tabselect` file to match your preferred search engine.

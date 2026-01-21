@@ -6,13 +6,11 @@ import json
 import struct
 from threading import Thread
 
-# TODO: Find a proper way to gracefully shut down the application,
-# e.g. not just killing it using SIGKILL
-tabflow_prefix = "/tmp/tabflow/"
-switchto_pipe = "switchto"
-tabfile_path = "tabs"
-dir_permissions = 0o1700
-permissions = 0o600
+TABFLOW_PREFIX = "/tmp/tabflow/"
+SWITCHTO_PIPE = "switchto"
+TABFILE = "tabs"
+DIR_PERMISSIONS = 0o1700
+PERMISSIONS = 0o600
 
 
 def getMessage():
@@ -37,11 +35,11 @@ def sendMessage(encodedMessage):
 
 
 def opener(path, flags):
-    return os.open(path, flags, mode=permissions)
+    return os.open(path, flags, mode=PERMISSIONS)
 
 
 def readerThread():
-    with open(tabflow_prefix + tabfile_path, 'w', opener=opener) as f:
+    with open(TABFLOW_PREFIX + TABFILE, 'w', opener=opener) as f:
         while True:
             f.seek(0)
             receivedMessage = getMessage()
@@ -51,14 +49,14 @@ def readerThread():
 
 def writerThread():
     try:
-        if not os.path.exists(tabflow_prefix + switchto_pipe):
-            os.mkfifo(tabflow_prefix + switchto_pipe, mode=permissions)
+        if not os.path.exists(TABFLOW_PREFIX + SWITCHTO_PIPE):
+            os.mkfifo(TABFLOW_PREFIX + SWITCHTO_PIPE, mode=PERMISSIONS)
     except OSError:
         print("An error occured while creating the FIFO pipe. Exiting!")
         exit(1)
     while True:
         try:
-            f = open(tabflow_prefix + switchto_pipe, 'r')
+            f = open(TABFLOW_PREFIX + SWITCHTO_PIPE, 'r')
         except FileNotFoundError:
             print("Could not find pipe")
             exit(1)
@@ -68,10 +66,10 @@ def writerThread():
 
 
 if __name__ == "__main__":
-    if not os.path.exists(tabflow_prefix):
-        os.mkdir(tabflow_prefix, mode=dir_permissions)
-    if not os.path.exists(tabflow_prefix + "icons/"):
-        os.mkdir(tabflow_prefix + "icons/", mode=dir_permissions)
+    if not os.path.exists(TABFLOW_PREFIX):
+        os.mkdir(TABFLOW_PREFIX, mode=DIR_PERMISSIONS)
+    if not os.path.exists(TABFLOW_PREFIX + "icons/"):
+        os.mkdir(TABFLOW_PREFIX + "icons/", mode=DIR_PERMISSIONS)
     reader = Thread(target=readerThread)
     reader.start()
     writer = Thread(target=writerThread)
